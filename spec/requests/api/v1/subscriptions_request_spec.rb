@@ -78,6 +78,28 @@ RSpec.describe 'Subscriptions Requests' do
     expect(json_response[:errors]).to eq(["Price can't be blank", "Frequency can't be blank"])
   end
 
+  it 'returns an error if you try to create a subscription for a customer or tea that does not exist' do 
+    subscription_params = {
+      tea_id: 1,
+      customer_id: 1,
+      title: "New subscription",
+      frequency: 2,
+      price: 6.50
+    }
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    expect(Subscription.all.count).to eq(0)
+
+    post '/api/v1/subscriptions', headers: headers, params: JSON.generate(subscription: subscription_params)
+    
+    json_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(Subscription.all.count).to eq(0)
+    expect(response.status).to eq(400)
+    expect(json_response[:message]).to eq("Record is missing one or more attributes")
+    expect(json_response[:errors]).to eq(["Customer must exist", "Tea must exist"])
+  end
+
   it 'can cancel a customers tea subscription' do 
     customer = create(:customer)
     tea = create(:tea)
