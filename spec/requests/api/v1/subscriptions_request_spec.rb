@@ -18,12 +18,14 @@ RSpec.describe 'Subscriptions Requests' do
     post '/api/v1/subscriptions', headers: headers, params: JSON.generate(subscription: subscription_params)
 
     new_subscription = Subscription.last 
-require 'pry'; binding.pry
+
     expect(Subscription.all.count).to eq(1)
     expect(new_subscription.customer_id).to eq(customer.id)
     expect(new_subscription.tea_id).to eq(tea.id)
     expect(new_subscription.title).to be_a(String)
     expect(new_subscription.frequency).to be_an(Integer)
+    expect(new_subscription.status).to eq('active')
+    expect(new_subscription.price).to be_a(Float)
 
     json_response = JSON.parse(response.body, symbolize_names: true)
 
@@ -58,5 +60,19 @@ require 'pry'; binding.pry
     customer = create(:customer)
     tea = create(:tea)
     subscription = create(:subscription, customer: customer, tea: tea)
+
+    expect(subscription.status).to eq('active')
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    subscription_params = {
+      status: "cancelled"
+    }
+
+    patch "/api/v1/subscriptions/#{subscription.id}", headers: headers, params: JSON.generate(subscription: subscription_params)  
+
+    subscription.reload
+    
+    expect(response.status).to eq(200)
+    expect(subscription.status).to eq('cancelled')
   end
 end
