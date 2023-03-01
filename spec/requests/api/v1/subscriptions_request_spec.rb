@@ -56,6 +56,28 @@ RSpec.describe 'Subscriptions Requests' do
     expect(json_response[:data][:attributes][:price]).to be_a(Float)
   end
 
+  it 'returns an error message if the subscription is missing attributes' do 
+    customer = create(:customer)
+    tea = create(:tea)
+    subscription_params = {
+                            tea_id: tea.id,
+                            customer_id: customer.id,
+                            title: "#{tea.title} subscription"
+                          }
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    expect(Subscription.all.count).to eq(0)
+
+    post '/api/v1/subscriptions', headers: headers, params: JSON.generate(subscription: subscription_params)
+
+    json_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(Subscription.all.count).to eq(0)
+    expect(response.status).to eq(400)
+    expect(json_response[:message]).to eq("Record is missing one or more attributes")
+    expect(json_response[:errors]).to eq(["Price can't be blank", "Frequency can't be blank"])
+  end
+
   it 'can cancel a customers tea subscription' do 
     customer = create(:customer)
     tea = create(:tea)
