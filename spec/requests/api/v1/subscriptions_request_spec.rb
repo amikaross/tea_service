@@ -1,14 +1,15 @@
 require 'rails_helper'
 
-RSpec.describe 'Subscription Requests' do 
-  it 'can create a subscription' do 
+RSpec.describe 'Subscriptions Requests' do 
+  it 'can create a subscription for a customer' do 
     customer = create(:customer)
     tea = create(:tea)
     subscription_params = {
                             tea_id: tea.id,
                             customer_id: customer.id,
                             title: "#{tea.title} subscription",
-                            frequency: 2
+                            frequency: 2,
+                            price: 6.50
                           }
     headers = {"CONTENT_TYPE" => "application/json"}
 
@@ -17,7 +18,7 @@ RSpec.describe 'Subscription Requests' do
     post '/api/v1/subscriptions', headers: headers, params: JSON.generate(subscription: subscription_params)
 
     new_subscription = Subscription.last 
-
+require 'pry'; binding.pry
     expect(Subscription.all.count).to eq(1)
     expect(new_subscription.customer_id).to eq(customer.id)
     expect(new_subscription.tea_id).to eq(tea.id)
@@ -45,5 +46,17 @@ RSpec.describe 'Subscription Requests' do
 
     expect(json_response[:data][:attributes]).to have_key(:frequency)
     expect(json_response[:data][:attributes][:frequency]).to be_an(Integer)
+
+    expect(json_response[:data][:attributes]).to have_key(:status)
+    expect(json_response[:data][:attributes][:status]).to eq('active')
+
+    expect(json_response[:data][:attributes]).to have_key(:price)
+    expect(json_response[:data][:attributes][:price]).to be_a(Float)
+  end
+
+  it 'can cancel a customers tea subscription' do 
+    customer = create(:customer)
+    tea = create(:tea)
+    subscription = create(:subscription, customer: customer, tea: tea)
   end
 end
