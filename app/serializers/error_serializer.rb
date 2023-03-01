@@ -1,14 +1,16 @@
+# frozen_string_literal: true
+
 class ErrorSerializer
   def self.not_found(message)
     {
-      "message": "No record found",
+      "message": 'No record found',
       "errors": [message]
     }
   end
 
   def self.missing_attributes(messages)
     {
-      "message": "Record is missing one or more attributes",
+      "message": 'Record is missing one or more attributes',
       "errors": messages
     }
   end

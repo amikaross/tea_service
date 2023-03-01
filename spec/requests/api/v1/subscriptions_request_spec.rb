@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe 'Subscriptions Requests' do 
-  it 'can get all of a customers subscriptions' do 
+RSpec.describe 'Subscriptions Requests' do
+  it 'can get all of a customers subscriptions' do
     customer = create(:customer)
     other_customer = create(:customer)
     tea_1 = create(:tea)
@@ -18,7 +20,7 @@ RSpec.describe 'Subscriptions Requests' do
     expect(other_customer.subscriptions.count).to eq(2)
 
     get "/api/v1/customers/#{customer.id}/subscriptions"
-    
+
     json_response = JSON.parse(response.body, symbolize_names: true)
 
     expect(response.status).to eq(200)
@@ -53,17 +55,17 @@ RSpec.describe 'Subscriptions Requests' do
     end
   end
 
-  it 'responds with an error if you try to get subscriptions for a customer that does not exist' do 
+  it 'responds with an error if you try to get subscriptions for a customer that does not exist' do
     get '/api/v1/customers/200/subscriptions'
 
     json_response = JSON.parse(response.body, symbolize_names: true)
 
     expect(response.status).to eq(404)
-    expect(json_response[:message]).to eq("No record found")
+    expect(json_response[:message]).to eq('No record found')
     expect(json_response[:errors]).to eq(["Couldn't find Customer with 'id'=200"])
   end
 
-  it 'returns an empty collection if that customer does not have any subscriptions' do 
+  it 'returns an empty collection if that customer does not have any subscriptions' do
     customer = create(:customer)
     other_customer = create(:customer)
     tea_1 = create(:tea)
@@ -79,23 +81,23 @@ RSpec.describe 'Subscriptions Requests' do
     expect(json_response[:data]).to eq([])
   end
 
-  it 'can create a subscription for a customer' do 
+  it 'can create a subscription for a customer' do
     customer = create(:customer)
     tea = create(:tea)
     subscription_params = {
-                            tea_id: tea.id,
-                            customer_id: customer.id,
-                            title: "#{tea.title} subscription",
-                            frequency: 2,
-                            price: 6.50
-                          }
-    headers = {"CONTENT_TYPE" => "application/json"}
+      tea_id: tea.id,
+      customer_id: customer.id,
+      title: "#{tea.title} subscription",
+      frequency: 2,
+      price: 6.50
+    }
+    headers = { 'CONTENT_TYPE' => 'application/json' }
 
     expect(Subscription.all.count).to eq(0)
 
     post '/api/v1/subscriptions', headers: headers, params: JSON.generate(subscription: subscription_params)
 
-    new_subscription = Subscription.last 
+    new_subscription = Subscription.last
 
     expect(response.status).to eq(201)
     expect(Subscription.all.count).to eq(1)
@@ -110,7 +112,7 @@ RSpec.describe 'Subscriptions Requests' do
 
     expect(json_response).to have_key(:data)
     expect(json_response[:data]).to have_key(:type)
-    expect(json_response[:data][:type]).to eq("subscription")
+    expect(json_response[:data][:type]).to eq('subscription')
     expect(json_response[:data]).to have_key(:id)
     expect(json_response[:data][:id]).to be_a(String)
     expect(json_response[:data]).to have_key(:attributes)
@@ -135,15 +137,15 @@ RSpec.describe 'Subscriptions Requests' do
     expect(json_response[:data][:attributes][:price]).to be_a(Float)
   end
 
-  it 'returns an error message if the subscription is missing attributes' do 
+  it 'returns an error message if the subscription is missing attributes' do
     customer = create(:customer)
     tea = create(:tea)
     subscription_params = {
-                            tea_id: tea.id,
-                            customer_id: customer.id,
-                            title: "#{tea.title} subscription"
-                          }
-    headers = {"CONTENT_TYPE" => "application/json"}
+      tea_id: tea.id,
+      customer_id: customer.id,
+      title: "#{tea.title} subscription"
+    }
+    headers = { 'CONTENT_TYPE' => 'application/json' }
 
     expect(Subscription.all.count).to eq(0)
 
@@ -153,64 +155,65 @@ RSpec.describe 'Subscriptions Requests' do
 
     expect(Subscription.all.count).to eq(0)
     expect(response.status).to eq(400)
-    expect(json_response[:message]).to eq("Record is missing one or more attributes")
+    expect(json_response[:message]).to eq('Record is missing one or more attributes')
     expect(json_response[:errors]).to eq(["Price can't be blank", "Frequency can't be blank"])
   end
 
-  it 'returns an error if you try to create a subscription for a customer or tea that does not exist' do 
+  it 'returns an error if you try to create a subscription for a customer or tea that does not exist' do
     subscription_params = {
       tea_id: 1,
       customer_id: 1,
-      title: "New subscription",
+      title: 'New subscription',
       frequency: 2,
       price: 6.50
     }
-    headers = {"CONTENT_TYPE" => "application/json"}
+    headers = { 'CONTENT_TYPE' => 'application/json' }
 
     expect(Subscription.all.count).to eq(0)
 
     post '/api/v1/subscriptions', headers: headers, params: JSON.generate(subscription: subscription_params)
-    
+
     json_response = JSON.parse(response.body, symbolize_names: true)
 
     expect(Subscription.all.count).to eq(0)
     expect(response.status).to eq(400)
-    expect(json_response[:message]).to eq("Record is missing one or more attributes")
-    expect(json_response[:errors]).to eq(["Customer must exist", "Tea must exist"])
+    expect(json_response[:message]).to eq('Record is missing one or more attributes')
+    expect(json_response[:errors]).to eq(['Customer must exist', 'Tea must exist'])
   end
 
-  it 'can cancel a customers tea subscription' do 
+  it 'can cancel a customers tea subscription' do
     customer = create(:customer)
     tea = create(:tea)
     subscription = create(:subscription, customer: customer, tea: tea)
 
     expect(subscription.status).to eq('active')
 
-    headers = {"CONTENT_TYPE" => "application/json"}
+    headers = { 'CONTENT_TYPE' => 'application/json' }
     subscription_params = {
-      status: "cancelled"
+      status: 'cancelled'
     }
 
-    patch "/api/v1/subscriptions/#{subscription.id}", headers: headers, params: JSON.generate(subscription: subscription_params)  
+    patch "/api/v1/subscriptions/#{subscription.id}", headers: headers,
+                                                      params: JSON.generate(subscription: subscription_params)
 
     subscription.reload
-    
+
     expect(response.status).to eq(200)
     expect(subscription.status).to eq('cancelled')
   end
 
-  it 'returns an error message if you try to cancel a subscription that does not exist' do 
-    headers = {"CONTENT_TYPE" => "application/json"}
+  it 'returns an error message if you try to cancel a subscription that does not exist' do
+    headers = { 'CONTENT_TYPE' => 'application/json' }
     subscription_params = {
-      status: "cancelled"
+      status: 'cancelled'
     }
 
-    patch "/api/v1/subscriptions/10000000", headers: headers, params: JSON.generate(subscription: subscription_params)
+    patch '/api/v1/subscriptions/10000000', headers: headers, params: JSON.generate(subscription: subscription_params)
 
     json_response = JSON.parse(response.body, symbolize_names: true)
 
     expect(response.status).to eq(404)
-    expect(json_response[:message]).to eq("No record found")
+    expect(json_response[:message]).to eq('No record found')
     expect(json_response[:errors]).to eq(["Couldn't find Subscription with 'id'=10000000"])
   end
 end
