@@ -19,6 +19,7 @@ RSpec.describe 'Subscriptions Requests' do
 
     new_subscription = Subscription.last 
 
+    expect(response.status).to eq(201)
     expect(Subscription.all.count).to eq(1)
     expect(new_subscription.customer_id).to eq(customer.id)
     expect(new_subscription.tea_id).to eq(tea.id)
