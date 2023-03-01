@@ -1,6 +1,84 @@
 require 'rails_helper'
 
 RSpec.describe 'Subscriptions Requests' do 
+  it 'can get all of a customers subscriptions' do 
+    customer = create(:customer)
+    other_customer = create(:customer)
+    tea_1 = create(:tea)
+    tea_2 = create(:tea)
+    tea_3 = create(:tea)
+    tea_4 = create(:tea)
+    sub_1 = create(:subscription, customer: customer, tea: tea_1)
+    sub_2 = create(:subscription, customer: customer, tea: tea_2)
+    sub_3 = create(:subscription, customer: customer, tea: tea_3, status: 'cancelled')
+    other_sub = create(:subscription, customer: other_customer, tea: tea_4)
+    other_sub = create(:subscription, customer: other_customer, tea: tea_1)
+
+    expect(customer.subscriptions.count).to eq(3)
+    expect(other_customer.subscriptions.count).to eq(2)
+
+    get "/api/v1/customers/#{customer.id}/subscriptions"
+    
+    json_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response.status).to eq(200)
+    expect(json_response).to have_key(:data)
+    expect(json_response[:data]).to be_an(Array)
+    expect(json_response[:data].count).to eq(3)
+
+    json_response[:data].each do |subscription|
+      expect(subscription).to have_key(:id)
+      expect(subscription[:id]).to be_a(String)
+      expect(subscription).to have_key(:type)
+      expect(subscription[:type]).to eq('subscription')
+      expect(subscription).to have_key(:attributes)
+
+      expect(subscription[:attributes]).to have_key(:customer_id)
+      expect(subscription[:attributes][:customer_id]).to eq(customer.id)
+
+      expect(subscription[:attributes]).to have_key(:tea_id)
+      expect(subscription[:attributes][:tea_id]).to be_an(Integer)
+
+      expect(subscription[:attributes]).to have_key(:title)
+      expect(subscription[:attributes][:title]).to be_a(String)
+
+      expect(subscription[:attributes]).to have_key(:frequency)
+      expect(subscription[:attributes][:frequency]).to be_an(Integer)
+
+      expect(subscription[:attributes]).to have_key(:status)
+      expect(subscription[:attributes][:status]).to be_a(String)
+
+      expect(subscription[:attributes]).to have_key(:price)
+      expect(subscription[:attributes][:price]).to be_a(Float)
+    end
+  end
+
+  it 'responds with an error if you try to get subscriptions for a customer that does not exist' do 
+    get '/api/v1/customers/200/subscriptions'
+
+    json_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response.status).to eq(404)
+    expect(json_response[:message]).to eq("No record found")
+    expect(json_response[:errors]).to eq(["Couldn't find Customer with 'id'=200"])
+  end
+
+  it 'returns an empty collection if that customer does not have any subscriptions' do 
+    customer = create(:customer)
+    other_customer = create(:customer)
+    tea_1 = create(:tea)
+    tea_2 = create(:tea)
+    other_sub = create(:subscription, customer: other_customer, tea: tea_1)
+    other_sub = create(:subscription, customer: other_customer, tea: tea_2)
+
+    get "/api/v1/customers/#{customer.id}/subscriptions"
+
+    json_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response.status).to eq(200)
+    expect(json_response[:data]).to eq([])
+  end
+
   it 'can create a subscription for a customer' do 
     customer = create(:customer)
     tea = create(:tea)
