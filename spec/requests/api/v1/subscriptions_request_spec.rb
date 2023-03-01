@@ -75,4 +75,19 @@ RSpec.describe 'Subscriptions Requests' do
     expect(response.status).to eq(200)
     expect(subscription.status).to eq('cancelled')
   end
+
+  it 'returns an error message if you try to cancel a subscription that does not exist' do 
+    headers = {"CONTENT_TYPE" => "application/json"}
+    subscription_params = {
+      status: "cancelled"
+    }
+
+    patch "/api/v1/subscriptions/10000000", headers: headers, params: JSON.generate(subscription: subscription_params)
+
+    json_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(response.status).to eq(404)
+    expect(json_response[:message]).to eq("No record found")
+    expect(json_response[:errors]).to eq(["Couldn't find Subscription with 'id'=10000000"])
+  end
 end
