@@ -1,4 +1,5 @@
-<h1 alight="center"> Tea Service </h1>
+<h1 align="center"> Tea Service </h1>
+
 A mock take-home challenge designed to simulate a task you might receive during an interview process. The scope is smaller scale and open ended. The goal is to complete the task in 8 hours or less. Since there is a time limit and due to the tasks open ended nature, you should manage your time and plan appropriately. Not only is completeing the take-home necessary, but also explaining your process and reasoning behind your decisions equally important. Use this challenge to practice speaking about your planning and decision making processes around the code you write. 
 
 ## Context
