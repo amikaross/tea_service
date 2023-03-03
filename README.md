@@ -116,12 +116,12 @@ Default host is `http://localhost:3000`
 - ### PATCH '/api/v1/subscription/:id'
     > patch the subscription (ex: change status to cancelled)
     
-      #### Example Request Body:
-      ```
-      {
-        "status": "canelled"
-      }
-      ```
+     #### Example Request Body:
+     ```
+     {
+       "status": "canelled"
+     }
+     ```
 
   #### Example Response
   ```json
