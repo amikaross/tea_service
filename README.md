@@ -46,7 +46,7 @@ Default host is `http://localhost:3000`
 }
 ```
 
-- ### GET '/api/v1/customers/:customer_id/subscriptions'
+- ### GET /api/v1/customers/:customer_id/subscriptions
   > return an index of ome customer's subscriptions
   
   #### Example Response
@@ -114,7 +114,7 @@ Default host is `http://localhost:3000`
   ```
   <br>
 
-- ### PATCH '/api/v1/subscription/:id'
+- ### PATCH /api/v1/subscription/:id
     > patch the subscription (ex: change status to cancelled)
     
      #### Example Request Body:
